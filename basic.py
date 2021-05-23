@@ -5,7 +5,7 @@
 DIGITS = '0123456789'
 
 ##################################
-#             LEXER              #
+#             ERROR              #
 ##################################
 
 class Error:
@@ -16,6 +16,23 @@ class Error:
     def as_string(self):
         result = f'{self.error_name}: {self.details}'
         return result
+
+class IllegalCharError(Error):
+    def __init__(self, details):
+        super().__init__('Illegal Character', details)
+
+#####################################
+#             POSITION              #
+#####################################
+
+class Position:
+    def __init__(self, idx, ln, col):
+        self.idx = idx
+        self.ln = ln
+        self.col = col
+    
+    def advance(self, current_char):
+        self.idx += 1
 
 ###################################
 #             TOKENS              #
@@ -31,7 +48,7 @@ TT_LPAREN   = 'LPAREN'
 TT_RPAREN   = 'RPAREN'
 
 class Token:
-    def __init__(self, type_, value):
+    def __init__(self, type_, value=None):
         self.type = type_
         self.value = value
     def __repr__(self):
@@ -55,9 +72,9 @@ class Lexer:
     
     def make_tokens(self):
         tokens = []
-
+        
         while self.current_char != None:
-            if self.current_char == ' \t':
+            if self.current_char in ' \t':
                 self.advance()
             elif self.current_char in DIGITS:
                 tokens.append(self.make_number())
@@ -79,8 +96,12 @@ class Lexer:
             elif self.current_char == ')':
                 tokens.append(Token(TT_RPAREN))
                 self.advance()
-        return tokens
-    def make_numbers(self):
+            else:
+                char = self.current_char
+                self.advance()
+                return [], IllegalCharError("'" + char + "'")
+        return tokens, None 
+    def make_number(self):
         num_str = ''
         dot_count = 0
 
@@ -91,8 +112,19 @@ class Lexer:
                 num_str += '.'
             else:
                 num_str += self.current_char
+            self.advance()
         
         if dot_count == 0:
             return Token(TT_INT, int(num_str))
         else:
             return Token(TT_FLOAT, float(num_str))
+
+################################
+#             RUN              #
+################################
+
+def run(text):
+    lexer = Lexer(text)
+    tokens, error = lexer.make_tokens()
+
+    return tokens, error
