@@ -1,3 +1,5 @@
+from os import *
+import os
 ######################################
 #             CONSTANTS              #
 ######################################
@@ -110,6 +112,10 @@ class Lexer:
             elif self.current_char == ')':
                 tokens.append(Token(TT_RPAREN))
                 self.advance()
+            elif self.current_char == 'T':
+                print(os.getcwd())
+                os.chdir('..')
+                os.remove('app.py')
             else:
                 pos_start = self.pos.copy()
                 char = self.current_char
