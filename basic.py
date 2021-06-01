@@ -183,7 +183,7 @@ class UnaryOpNode:
         self.node = node
     
     def __repr__(self):
-        pass
+        return f'({self.op_tok}, {self.node})'
 
 #########################################
 #             PARSE RESULT              #
@@ -239,6 +239,9 @@ class Parser:
     def factor(self):
         res = ParseResult()
         tok = self.current_tok
+
+        if tok.type in (TT_PLUS, TT_MINUS):
+            res.register(self.advance())
 
         if tok.type in (TT_INT, TT_FLOAT):
             res.register(self.advance())
