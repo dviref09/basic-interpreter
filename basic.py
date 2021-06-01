@@ -183,7 +183,7 @@ class UnaryOpNode:
         self.node = node
     
     def __repr__(self):
-        pass
+        return f'({self.op_tok}, {self.node})'
 
 #########################################
 #             PARSE RESULT              #
@@ -230,7 +230,7 @@ class Parser:
         if not res.error and self.current_tok.type != TT_EOF:
             return res.failure(InvalidSyntaxError(
 			self.current_tok.pos_start, self.current_tok.pos_end,
-			"Expected int or float"
+			"Expected '+', '-', '*' or '/'"
 		))
         return res
 
@@ -240,9 +240,28 @@ class Parser:
         res = ParseResult()
         tok = self.current_tok
 
-        if tok.type in (TT_INT, TT_FLOAT):
+        if tok.type in (TT_PLUS, TT_MINUS):
+            res.register(self.advance())
+            factor = res.register(self.factor())
+            if res.error: return res
+            return res.success(UnaryOpNode(tok, factor))
+
+        elif tok.type in (TT_INT, TT_FLOAT):
             res.register(self.advance())
             return res.success(NumberNode(tok))
+
+        elif tok.type == TT_LPAREN:
+            res.register(self.advance())
+            expr = res.register(self.expr())
+            if res.error: return res
+            if self.current_tok.type == TT_RPAREN:
+                res.register(self.advance)
+                return res.success(expr)
+            else:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected ')'"
+                ))
         
         return res.failure(InvalidSyntaxError(
 			tok.pos_start, tok.pos_end,
@@ -276,6 +295,7 @@ class Parser:
 ################################
 
 def run(fn, text):
+    # Generate Tokens
     lexer = Lexer(fn, text)
     tokens, error = lexer.make_tokens()
     if error: return None, error
@@ -284,4 +304,5 @@ def run(fn, text):
     # Generate AST
     parser = Parser(tokens)
     ast = parser.parse()
+    print(tokens)
     return ast.node, ast.error
