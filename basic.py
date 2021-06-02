@@ -243,7 +243,7 @@ class Parser:
         if tok.type in (TT_PLUS, TT_MINUS):
             res.register(self.advance())
 
-        if tok.type in (TT_INT, TT_FLOAT):
+        if tok.type in (TT_PLUS, TT_MINUS):
             factor = res.register(self.factor())
             if res.error: return res
             return res.success(UnaryOpNode(tok, factor))
