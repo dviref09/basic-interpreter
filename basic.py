@@ -294,7 +294,7 @@ class Parser:
 
 ###################################
 #             VALUES              #
-###################################
+###################################g
 
 class Number:
     def __init__(self, value):
@@ -307,7 +307,7 @@ class Number:
         return self
     
     def added_to(self, other):
-        return 0
+        if isinstance(other, Number)
 
 ########################################
 #             INTERPRETER              #
